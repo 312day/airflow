@@ -145,7 +145,7 @@ RUN KEY="A4A9406876FCBD3C456770C88C718D3B5072E1F5" \
     && apt-get autoremove -yqq --purge \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-ARG AIRFLOW_REPO=apache/airflow
+ARG AIRFLOW_REPO=312day/airflow
 ENV AIRFLOW_REPO=${AIRFLOW_REPO}
 
 ARG AIRFLOW_BRANCH=master
