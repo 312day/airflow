@@ -53,8 +53,8 @@ spec:
           name: airflow-logs
         - mountPath: /opt/airflow/dags
           name: airflow-dags
-          readOnly: true
-          subPath: repo/tests/dags
+#           readOnly: true
+#           subPath: repo/tests/dags
   hostNetwork: false
   restartPolicy: Never
   securityContext:
