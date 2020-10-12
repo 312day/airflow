@@ -292,10 +292,13 @@ function kind::deploy_airflow_with_helm() {
     echo "Deploying Airflow with Helm"
     echo
     echo "Deleting namespace ${HELM_AIRFLOW_NAMESPACE}"
+    echo "defaultAirflowRepository=${DOCKERHUB_USER}/${DOCKERHUB_REPO}"
+    echo "images.airflow.tag=${AIRFLOW_PROD_BASE_TAG}-kubernetes"
     kubectl delete namespace "${HELM_AIRFLOW_NAMESPACE}" >/dev/null 2>&1 || true
     kubectl delete namespace "test-namespace" >/dev/null 2>&1 || true
     kubectl create namespace "${HELM_AIRFLOW_NAMESPACE}"
     kubectl create namespace "test-namespace"
+    echo "${AIRFLOW_SOURCES}/chart"
     pushd "${AIRFLOW_SOURCES}/chart" || exit 1
     helm repo add stable https://kubernetes-charts.storage.googleapis.com
     helm dep update

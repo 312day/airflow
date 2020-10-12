@@ -84,6 +84,7 @@ This option will use a Persistent Volume Claim with an accessMode of `ReadWriteM
 helm upgrade airflow . \
   --set dags.persistence.enabled=true \
   --set dags.gitSync.enabled=true
+
   # you can also override the other persistence or gitSync values
   # by setting the  dags.persistence.* and dags.gitSync.* values
   # Please refer to values.yaml for details
@@ -110,6 +111,10 @@ helm upgrade airflow . \
   --set dags.persistence.existingClaim=my-volume-claim
   --set dags.gitSync.enabled=false
 ```
+
+helm upgrade airflow . \
+  --set dags.persistence.enabled=true \
+  --set dags.gitSync.enabled=false
 
 
 ## Parameters

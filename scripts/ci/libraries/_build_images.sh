@@ -582,7 +582,9 @@ Docker building ${AIRFLOW_CI_IMAGE}.
 # Prepares all variables needed by the CI build. Depending on the configuration used (python version
 # DockerHub user etc. the variables are set so that other functions can use those variables.
 function build_images::prepare_prod_build() {
+    echo "prepare_prod_build enter"
     if [[ -n "${INSTALL_AIRFLOW_REFERENCE=}" ]]; then
+        echo "--install-airflow-reference is used"
         # When --install-airflow-reference is used then the image is build from github tag
         EXTRA_DOCKER_PROD_BUILD_FLAGS=(
             "--build-arg" "AIRFLOW_INSTALL_SOURCES=https://github.com/apache/airflow/archive/${INSTALL_AIRFLOW_REFERENCE}.tar.gz#egg=apache-airflow"
@@ -590,6 +592,7 @@ function build_images::prepare_prod_build() {
         export AIRFLOW_VERSION="${INSTALL_AIRFLOW_REFERENCE}"
         build_images::add_build_args_for_remote_install
     elif [[ -n "${INSTALL_AIRFLOW_VERSION=}" ]]; then
+        echo "--install-airflow-reference is used and INSTALL_AIRFLOW_VERSION != null"
         # When --install-airflow-version is used then the image is build from PIP package
         EXTRA_DOCKER_PROD_BUILD_FLAGS=(
             "--build-arg" "AIRFLOW_INSTALL_SOURCES=apache-airflow"
@@ -598,26 +601,30 @@ function build_images::prepare_prod_build() {
         export AIRFLOW_VERSION="${INSTALL_AIRFLOW_VERSION}"
         build_images::add_build_args_for_remote_install
     else
+        echo "no airflow version/reference is specified"
         # When no airflow version/reference is specified, production image is built from local sources
         EXTRA_DOCKER_PROD_BUILD_FLAGS=(
             "--build-arg" "AIRFLOW_CONSTRAINTS_REFERENCE=${DEFAULT_CONSTRAINTS_BRANCH}"
         )
     fi
+    echo "EXTRA_DOCKER_PROD_BUILD_FLAGS = ${EXTRA_DOCKER_PROD_BUILD_FLAGS}"
+    echo "AIRFLOW_CONSTRAINTS_REFERENCE=${DEFAULT_CONSTRAINTS_BRANCH}"
     if [[ "${DEFAULT_PYTHON_MAJOR_MINOR_VERSION}" == "${PYTHON_MAJOR_MINOR_VERSION}" ]]; then
         export DEFAULT_CI_IMAGE="${AIRFLOW_PROD_IMAGE_DEFAULT}"
     else
         export DEFAULT_CI_IMAGE=""
     fi
+    echo "DEFAULT_CI_IMAGE=${DEFAULT_CI_IMAGE}"
     export THE_IMAGE_TYPE="PROD"
     export IMAGE_DESCRIPTION="Airflow production"
 
     # Those constants depend on the type of image run so they are only made constants here
     export AIRFLOW_EXTRAS="${AIRFLOW_EXTRAS:="${DEFAULT_PROD_EXTRAS}"}"
     readonly AIRFLOW_EXTRAS
-
+    echo "AIRFLOW_EXTRAS=${AIRFLOW_EXTRAS}"
     export AIRFLOW_IMAGE="${AIRFLOW_PROD_IMAGE}"
     readonly AIRFLOW_IMAGE
-
+    echo "AIRFLOW_IMAGE=${AIRFLOW_IMAGE}"
     if [[ ${USE_GITHUB_REGISTRY="false"} == "true" ]]; then
         if [[ -n ${GITHUB_TOKEN=} ]]; then
             echo "${GITHUB_TOKEN}" | docker login \
@@ -630,6 +637,8 @@ function build_images::prepare_prod_build() {
         export GITHUB_REGISTRY_AIRFLOW_PROD_IMAGE="${GITHUB_REGISTRY}/${github_repository_lowercase}/${AIRFLOW_PROD_BASE_TAG}"
         export GITHUB_REGISTRY_AIRFLOW_PROD_BUILD_IMAGE="${GITHUB_REGISTRY}/${github_repository_lowercase}/${AIRFLOW_PROD_BASE_TAG}-build"
         export GITHUB_REGISTRY_PYTHON_BASE_IMAGE="${GITHUB_REGISTRY}/${github_repository_lowercase}/python:${PYTHON_BASE_IMAGE_VERSION}-slim-buster"
+
+        echo "GITHUB_REGISTRY_AIRFLOW_PROD_IMAGE=${GITHUB_REGISTRY_AIRFLOW_PROD_IMAGE}"
     fi
 
     AIRFLOW_BRANCH_FOR_PYPI_PRELOADING="${BRANCH_NAME}"
@@ -652,7 +661,7 @@ function build_images::build_prod_images() {
     fi
 
     push_pull_remove_images::pull_prod_images_if_needed
-
+    echo "docker cache = ${DOCKER_CACHE}"
     if [[ "${DOCKER_CACHE}" == "disabled" ]]; then
         export DOCKER_CACHE_PROD_DIRECTIVE=("--cache-from" "${AIRFLOW_PROD_BUILD_IMAGE}")
         export DOCKER_CACHE_PROD_BUILD_DIRECTIVE=("--no-cache")
@@ -674,6 +683,20 @@ function build_images::build_prod_images() {
         exit 1
     fi
     set +u
+    echo "docker build ${EXTRA_DOCKER_PROD_BUILD_FLAGS[@]} "
+    echo "--build-arg PYTHON_BASE_IMAGE=${PYTHON_BASE_IMAGE}"
+    echo "--build-arg PYTHON_MAJOR_MINOR_VERSION=${PYTHON_MAJOR_MINOR_VERSION}"
+    echo "--build-arg AIRFLOW_VERSION=${AIRFLOW_VERSION}"
+    echo "--build-arg AIRFLOW_BRANCH=${AIRFLOW_BRANCH}"
+    echo "--build-arg AIRFLOW_EXTRAS=${AIRFLOW_EXTRAS}"
+    echo "--build-arg ADDITIONAL_AIRFLOW_EXTRAS=${ADDITIONAL_AIRFLOW_EXTRAS}"
+    echo "--build-arg ADDITIONAL_PYTHON_DEPS=${ADDITIONAL_PYTHON_DEPS}"
+    echo "--build-arg ADDITIONAL_DEV_DEPS=${ADDITIONAL_DEV_DEPS}"
+    echo "--build-arg BUILD_ID=${BUILD_ID}"
+    echo "--build-arg COMMIT_SHA=${COMMIT_SHA}"
+    echo "${DOCKER_CACHE_PROD_BUILD_DIRECTIVE[@]}"
+    echo "AIRFLOW_PROD_BUILD_IMAGE = ${AIRFLOW_PROD_BUILD_IMAGE}"
+    # return
     docker build \
         "${EXTRA_DOCKER_PROD_BUILD_FLAGS[@]}" \
         --build-arg PYTHON_BASE_IMAGE="${PYTHON_BASE_IMAGE}" \

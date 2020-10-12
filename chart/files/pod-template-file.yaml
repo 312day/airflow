@@ -51,11 +51,12 @@ spec:
 {{- end }}
 {{- if or .Values.dags.gitSync.enabled .Values.dags.persistence.enabled }}
         - mountPath: {{ include "airflow_dags_mount_path" . }}
-          name: airflow-dags
-          readOnly: true
-{{- if .Values.dags.persistence.enabled }}
-          subPath: {{.Values.dags.gitSync.dest }}/{{ .Values.dags.gitSync.subPath }}
-{{- end }}
+          name: dags
+#           name: airflow-dags
+#           readOnly: true
+# {{- if .Values.dags.persistence.enabled }}
+#           subPath: {{.Values.dags.gitSync.dest }}/{{ .Values.dags.gitSync.subPath }}
+# {{- end }}
 {{- end }}
   hostNetwork: false
   {{- if or .Values.registry.secretName .Values.registry.connection }}

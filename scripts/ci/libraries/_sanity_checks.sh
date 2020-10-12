@@ -131,7 +131,9 @@ function sanity_checks::assert_not_in_container() {
 # Changes directory to local sources
 function sanity_checks::go_to_airflow_sources {
     verbosity::print_info
+    echo "AIRFLOW_SOURCES = ${AIRFLOW_SOURCES}"
     pushd "${AIRFLOW_SOURCES}" &>/dev/null || exit 1
+    echo "AIRFLOW_SOURCES = ${AIRFLOW_SOURCES}"
     verbosity::print_info
     verbosity::print_info "Running in host in $(pwd)"
     verbosity::print_info

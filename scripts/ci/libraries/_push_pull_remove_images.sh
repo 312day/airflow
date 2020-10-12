@@ -25,10 +25,12 @@ function push_pull_remove_images::pull_image_if_not_present_or_forced() {
     local IMAGE_HASH
     IMAGE_HASH=$(docker images -q "${IMAGE_TO_PULL}" 2> /dev/null || true)
     local PULL_IMAGE=${FORCE_PULL_IMAGES}
-
+    echo "IMAGE_TO_PULL=${IMAGE_TO_PULL}"
+    echo "IMAGE_HASH=${IMAGE_HASH}"
     if [[ -z "${IMAGE_HASH=}" ]]; then
         PULL_IMAGE="true"
     fi
+    echo "PULL_IMAGE=${PULL_IMAGE}"
     if [[ "${PULL_IMAGE}" == "true" ]]; then
         echo
         echo "Pulling the image ${IMAGE_TO_PULL}"
@@ -96,6 +98,7 @@ Docker pulling ${PYTHON_BASE_IMAGE}.
 # Pulls PROD image in case caching strategy is "pulled" and the image needs to be pulled
 function push_pull_remove_images::pull_prod_images_if_needed() {
     if [[ "${DOCKER_CACHE}" == "pulled" ]]; then
+        echo "docker cache == pulled"
         if [[ "${FORCE_PULL_IMAGES}" == "true" ]]; then
             echo
             echo "Force pull base image ${PYTHON_BASE_IMAGE}"
